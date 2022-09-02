@@ -92,7 +92,7 @@ RUN apt-get update \
 # nglab
 RUN apt-get update \
     # Installazione package generazione e cattura di pacchetti
-    && apt-get --yes install wireshark packeth \
+    && apt-get --yes install wireshark tcpdump packeth \
 # Installazione strumenti di rete
     && apt-get --yes install netcat iproute2 net-tools dnsutils iputils-ping traceroute nmap \
 # Installazione strumenti di sviluppo
