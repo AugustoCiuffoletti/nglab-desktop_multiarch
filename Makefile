@@ -1,4 +1,4 @@
-.PHONY: push build run
+.PHONY: multiarch push build run
 
 # Default values for variables
 OWNER = mastrogeppetto
@@ -16,6 +16,16 @@ LOCALBUILD ?= 0
 
 # These files will be generated from teh Jinja templates (.j2 sources)
 templates = Dockerfile rootfs/etc/supervisor/conf.d/supervisord.conf
+
+multiarch:
+	if docker manifest inspect $(OWNER)/$(IMAGE):$(TAG) ; then docker manifest rm $(OWNER)/$(IMAGE):$(TAG) ; fi
+	ARCH=arm64 make push
+	ARCH=amd64 make push
+	docker manifest create \
+		$(OWNER)/$(IMAGE):$(TAG) \
+		--amend $(OWNER)/$(IMAGE)_amd64:$(TAG) \
+		--amend $(OWNER)/$(IMAGE)_arm64:$(TAG)
+	docker manifest push $(OWNER)/$(IMAGE):$(TAG)
 
 push:
 	ARCH=$(ARCH) make build
