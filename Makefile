@@ -1,7 +1,7 @@
 .PHONY: build run
 
 # Default values for variables
-REPO  ?= dorowu/ubuntu-desktop-lxde-vnc
+REPO  ?= nglab-desktop_multiarch
 TAG   ?= latest
 # you can choose other base image versions
 IMAGE ?= ubuntu:jammy-20220531
@@ -19,13 +19,14 @@ templates = Dockerfile rootfs/etc/supervisor/conf.d/supervisord.conf
 # Rebuild the container image
 build: $(templates)
 	cp Dockerfile Dockerfile.$(ARCH)
-	docker build -t $(REPO):$(TAG) -f Dockerfile.$(ARCH) .
+	docker buildx build --load --platform linux/$(ARCH) -t $(REPO)_$(ARCH):$(TAG) -f Dockerfile.$(ARCH) .
+#	docker build -t $(REPO):$(TAG) -f Dockerfile.$(ARCH) .
 
 # Test run the container
 # the local dir will be mounted under /src read-only
 run:
 	docker run --privileged --rm \
-		-p 6080:80 -p 6081:443 \
+		-p 6080:80 \
 		-v ${PWD}:/src:ro \
 		-e USER=doro -e PASSWORD=mypassword \
 		-e ALSADEV=hw:2,0 \
@@ -35,7 +36,7 @@ run:
 		-v ${PWD}/ssl:/etc/nginx/ssl \
 		--device /dev/snd \
 		--name ubuntu-desktop-lxde-test \
-		$(REPO):$(TAG)
+		$(REPO)_$(ARCH):$(TAG)
 
 # Connect inside the running container for debugging
 shell:

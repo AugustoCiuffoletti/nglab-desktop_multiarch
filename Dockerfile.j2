@@ -97,6 +97,22 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /var/cache/apt/* /tmp/a.txt /tmp/b.txt
 
+# nglab
+RUN apt-get update \
+    # Installazione package generazione e cattura di pacchetti
+    && apt-get --yes install wireshark packeth \
+# Installazione strumenti di rete
+    && apt-get --yes install netcat iproute2 net-tools dnsutils iputils-ping traceroute nmap \
+# Installazione strumenti di sviluppo
+    && apt-get --yes install make git \
+# Installazione strumenti ssh
+    && apt-get --yes install openssh-client openssh-server \
+# cleanup
+    && apt-get autoclean -y \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/cache/apt/*
+# end nglab
 
 ################################################################################
 # builder
