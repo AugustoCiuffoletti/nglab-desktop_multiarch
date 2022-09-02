@@ -1,5 +1,10 @@
 #!/bin/bash
 
+### added nglab
+echo "* start ssh daemon"
+/etc/init.d/ssh start
+### end added
+
 if [ -n "$VNC_PASSWORD" ]; then
     echo -n "$VNC_PASSWORD" > /.password1
     x11vnc -storepasswd $(cat /.password1) /.password2
@@ -36,6 +41,14 @@ if [ "$USER" != "root" ]; then
     [ -d "/dev/snd" ] && chgrp -R adm /dev/snd
 fi
 sed -i -e "s|%USER%|$USER|" -e "s|%HOME%|$HOME|" /etc/supervisor/conf.d/supervisord.conf
+
+### added nglab
+echo "* enable Wireshark capture from user $USER"
+groupadd -r wireshark
+usermod -a -G wireshark $USER
+chgrp wireshark /usr/bin/dumpcap
+chmod 4754 /usr/bin/dumpcap
+### end added
 
 # home folder
 if [ ! -x "$HOME/.config/pcmanfm/LXDE/" ]; then
