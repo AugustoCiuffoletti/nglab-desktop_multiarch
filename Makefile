@@ -1,7 +1,8 @@
-.PHONY: build run
+.PHONY: push build run
 
 # Default values for variables
-REPO  ?= nglab-desktop_multiarch
+OWNER = mastrogeppetto
+IMAGE  ?= nglab-desktop_multiarch
 TAG   ?= latest
 # you can choose other base image versions
 IMAGE ?= ubuntu:jammy-20220531
@@ -16,11 +17,16 @@ LOCALBUILD ?= 0
 # These files will be generated from teh Jinja templates (.j2 sources)
 templates = Dockerfile rootfs/etc/supervisor/conf.d/supervisord.conf
 
+push:
+	ARCH=$(ARCH) make build
+	docker tag $(IMAGE)_$(ARCH):$(TAG) $(OWNER)/$(IMAGE)_$(ARCH):$(TAG)
+	docker push $(OWNER)/$(IMAGE)_$(ARCH):$(TAG)
+
 # Rebuild the container image
 build: $(templates)
 	cp Dockerfile Dockerfile.$(ARCH)
-	docker buildx build --load --platform linux/$(ARCH) -t $(REPO)_$(ARCH):$(TAG) -f Dockerfile.$(ARCH) .
-#	docker build -t $(REPO):$(TAG) -f Dockerfile.$(ARCH) .
+	docker buildx build --load --platform linux/$(ARCH) -t $(IMAGE)_$(ARCH):$(TAG) -f Dockerfile.$(ARCH) .
+#	docker build -t $(IMAGE):$(TAG) -f Dockerfile.$(ARCH) .
 
 # Test run the container
 # the local dir will be mounted under /src read-only
@@ -36,7 +42,7 @@ run:
 		-v ${PWD}/ssl:/etc/nginx/ssl \
 		--device /dev/snd \
 		--name ubuntu-desktop-lxde-test \
-		$(REPO)_$(ARCH):$(TAG)
+		$(IMAGE)_$(ARCH):$(TAG)
 
 # Connect inside the running container for debugging
 shell:
@@ -52,7 +58,7 @@ clean:
 	rm -f $(templates)
 
 extra-clean:
-	docker rmi $(REPO):$(TAG)
+	docker rmi $(IMAGE):$(TAG)
 	docker image prune -f
 
 # Run jinja2cli to parse Jinja template applying rules defined in the flavors definitions
